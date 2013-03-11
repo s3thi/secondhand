@@ -111,6 +111,7 @@ INSTALLED_APPS = (
     'tastypie',
 
     # Project-specific apps.
+    'tracker',
     
     'django.contrib.auth',
     'django.contrib.contenttypes',
