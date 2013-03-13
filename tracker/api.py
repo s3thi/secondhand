@@ -43,6 +43,7 @@ class UserResource(ModelResource):
     class Meta:
         queryset = User.objects.all()
         resource_name = 'user'
+        authentication = ApiTokenAuthentication()
         authorization = DjangoAuthorization()
 
 
@@ -52,6 +53,7 @@ class TaskResource(ModelResource):
     class Meta:
         queryset = Task.objects.all()
         resource_name = 'task'
+        authentication = ApiTokenAuthentication()
         authorization = DjangoAuthorization()
 
 
@@ -62,4 +64,5 @@ class WorkSessionResource(ModelResource):
     class Meta:
         queryset = WorkSession.objects.all()
         resource_name = 'work_session'
+        authentication = ApiTokenAuthentication()
         authorization = DjangoAuthorization()
