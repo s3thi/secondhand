@@ -4,6 +4,8 @@ from django.db import models
 
 
 class ApiToken(models.Model):
+    # TODO: write tests for ApiToken.
+    
     EXPIRY_SECONDS = 7*24*60*60
     
     user = models.ForeignKey(User)
