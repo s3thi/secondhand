@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
 from tastypie.api import Api
 from tracker.api import UserResource, TaskResource, WorkSessionResource
+from tracker.views import SignupView
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -18,5 +19,6 @@ urlpatterns = patterns('',
 
     # Uncomment the next line to enable the admin:
     # url(r'^admin/', include(admin.site.urls)),
+    url(r'^signup/', SignupView.as_view(), name='signup'),
     url(r'^api/', include(v1_api.urls)),
 )
