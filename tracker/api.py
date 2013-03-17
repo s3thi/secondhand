@@ -7,6 +7,7 @@ from tastypie.authorization import DjangoAuthorization
 from tastypie.exceptions import BadRequest
 from tastypie.http import HttpUnauthorized
 from tastypie.resources import ModelResource
+from tastypie.throttle import CacheDBThrottle
 from tracker.models import Task, WorkSession, ApiToken
 
 
@@ -87,6 +88,7 @@ class UserResource(ModelResource):
         authentication = Authentication()
         include_resource_uri = False
         always_return_data = True
+        throttle = CacheDBThrottle(throttle_at=10)
 
     def obj_create(self, bundle, request=None, **kwargs):
         try:
