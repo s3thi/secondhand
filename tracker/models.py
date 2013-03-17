@@ -5,9 +5,9 @@ from django.db import models
 
 class ApiToken(models.Model):
     # TODO: write tests for ApiToken.
-    
-    EXPIRY_SECONDS = 7*24*60*60
-    
+
+    EXPIRY_SECONDS = 7 * 24 * 60 * 60
+
     user = models.ForeignKey(User)
     token = models.CharField(max_length=256)
     generated_on = models.DateTimeField(auto_now_add=True)
@@ -24,24 +24,24 @@ class ApiToken(models.Model):
                              token=token)
         api_token.save()
         return api_token
-    
+
     def is_valid(self):
         if self.force_expiry:
             return False
-        
+
         signer = TimestampSigner()
-        
+
         try:
             username = signer.unsign(self.token, max_age=self.expiry_seconds)
         except (BadSignature, SignatureExpired):
             return False
-        
+
         return username == self.user.username
-    
+
     def expire(self):
         self.force_expiry = True
         self.save()
-    
+
     def __unicode__(self):
         if self.is_valid():
             return 'Token for {0}'.format(self.user.username)
