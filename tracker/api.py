@@ -4,11 +4,12 @@ from django.db import IntegrityError
 from tastypie import fields
 from tastypie.authentication import Authentication
 from tastypie.authorization import DjangoAuthorization
+from tastypie.constants import ALL, ALL_WITH_RELATIONS
 from tastypie.exceptions import BadRequest
 from tastypie.http import HttpUnauthorized
 from tastypie.resources import ModelResource
 from tastypie.throttle import CacheDBThrottle
-from tracker.models import Task, WorkSession, ApiToken
+from tracker.models import Task, WorkSession, ApiToken, Project
 
 
 class ApiTokenAuthentication(Authentication):
@@ -43,6 +44,10 @@ class ApiTokenAuthentication(Authentication):
         return True
 
 
+# TODO: all of these resources should add Access-Control-Allow-Methods to
+# their response. This can be done by overriding Resource.create_response.
+
+
 class ApiTokenResource(ModelResource):
     class Meta:
         resource_name = 'token'
@@ -52,7 +57,6 @@ class ApiTokenResource(ModelResource):
         detail_allowed_methods = []
         always_return_data = True
         fields = ['token', 'expiry_seconds', 'generated_on']
-        include_resource_uri = False
 
     def obj_create(self, bundle, **kwargs):
         username, password = bundle.data['username'], bundle.data['password']
@@ -65,7 +69,7 @@ class ApiTokenResource(ModelResource):
 
     def alter_detail_data_to_serialize(self, request, bundle):
         """
-        Removes username and password from returned data. \
+        Removes username and password from returned data.
 
         We have to do this here because POST requests will return whatever
         data is passed to them if always_return_data is True.
@@ -79,49 +83,46 @@ class ApiTokenResource(ModelResource):
         return bundle
 
 
-class UserResource(ModelResource):
-    class Meta:
-        object_class = User
-        list_allowed_methods = ['post']
-        detail_allowed_methods = []
-        resource_name = 'user'
-        authentication = Authentication()
-        include_resource_uri = False
-        always_return_data = True
-        throttle = CacheDBThrottle(throttle_at=10)
-
-    def obj_create(self, bundle, request=None, **kwargs):
-        try:
-            username, email, password = bundle.data['username'], bundle.data['email'], bundle.data['password']
-        except KeyError, e:
-            raise BadRequest('Missing parameter: ' + e.args[0])
-
-        try:
-            bundle.obj = User.objects.create_user(username, email, password)
-        except IntegrityError:
-            raise BadRequest('The username already exists')
+class AddUserFieldMixin(object):
+    def hydrate(self, bundle):
+        bundle.obj.user = bundle.request.user
         return bundle
 
 
-class TaskResource(ModelResource):
-    user = fields.ForeignKey(UserResource, 'user')
-
-    always_return_data = True
+class ProjectResource(AddUserFieldMixin, ModelResource):
+    resource_name = 'project'
 
     class Meta:
+        always_return_data = True
+        queryset = Project.objects.all()
+        resource_name = 'project'
+        authentication = ApiTokenAuthentication()
+        authorization = DjangoAuthorization()
+        filtering = {
+            'id': ALL
+        }
+
+
+class TaskResource(AddUserFieldMixin, ModelResource):
+    project = fields.ForeignKey(ProjectResource, 'project')
+    resource_name = 'task'
+
+    class Meta:
+        always_return_data = True
         queryset = Task.objects.all()
         resource_name = 'task'
         authentication = ApiTokenAuthentication()
         authorization = DjangoAuthorization()
+        filtering = {
+            'project': ALL_WITH_RELATIONS
+        }
 
 
 class WorkSessionResource(ModelResource):
-    user = fields.ForeignKey(UserResource, 'user')
     task = fields.ForeignKey(TaskResource, 'task')
 
-    always_return_data = True
-
     class Meta:
+        always_return_data = True
         queryset = WorkSession.objects.all()
         resource_name = 'work_session'
         authentication = ApiTokenAuthentication()
