@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, include, url
 from tastypie.api import Api
-from tracker.api import UserResource, TaskResource, WorkSessionResource, \
-    ApiTokenResource
+from tracker.api import TaskResource, WorkSessionResource, \
+    ApiTokenResource, ProjectResource
 from tracker.views import SignupView
 
 # Uncomment the next two lines to enable the admin:
@@ -11,7 +11,7 @@ from tracker.views import SignupView
 # tracker API.
 v1_api = Api(api_name='v1')
 v1_api.register(ApiTokenResource())
-v1_api.register(UserResource())
+v1_api.register(ProjectResource())
 v1_api.register(TaskResource())
 v1_api.register(WorkSessionResource())
 
