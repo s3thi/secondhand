@@ -49,8 +49,14 @@ class ApiToken(models.Model):
             return 'Expired token for {0}'.format(self.user.username)
 
 
+class Project(models.Model):
+    name = models.TextField()
+    user = models.ForeignKey(User)
+
+
 class Task(models.Model):
-    name = models.DateTimeField()
+    name = models.TextField()
+    project = models.ForeignKey(Project)
     user = models.ForeignKey(User)
 
 
