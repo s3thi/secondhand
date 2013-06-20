@@ -3,7 +3,6 @@
 *.db
 local_settings.py
 .project
-.pydevproject
 .settings
 TODO.md
 .idea
