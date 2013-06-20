@@ -53,11 +53,17 @@ class Project(models.Model):
     name = models.TextField()
     user = models.ForeignKey(User)
 
+    def __unicode__(self):
+        return self.name
+
 
 class Task(models.Model):
     name = models.TextField()
     project = models.ForeignKey(Project)
     user = models.ForeignKey(User)
+
+    def __unicode__(self):
+        return self.name
 
 
 class WorkSession(models.Model):
@@ -65,3 +71,6 @@ class WorkSession(models.Model):
     user = models.ForeignKey(User)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+
+    def __unicode__(self):
+        return 'Session for {0}'.format(self.task.name)
