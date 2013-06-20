@@ -114,7 +114,8 @@ class TaskResource(AddUserFieldMixin, ModelResource):
         authentication = ApiTokenAuthentication()
         authorization = DjangoAuthorization()
         filtering = {
-            'project': ALL_WITH_RELATIONS
+            'project': ALL_WITH_RELATIONS,
+            'id': ALL
         }
 
 
@@ -124,6 +125,9 @@ class WorkSessionResource(ModelResource):
     class Meta:
         always_return_data = True
         queryset = WorkSession.objects.all()
-        resource_name = 'work_session'
+        resource_name = 'workSession'
         authentication = ApiTokenAuthentication()
         authorization = DjangoAuthorization()
+        filtering = {
+            'task': ALL_WITH_RELATIONS
+        }
