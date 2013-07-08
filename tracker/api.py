@@ -89,6 +89,13 @@ class AddUserFieldMixin(object):
         return bundle
 
 
+class UserResource(ModelResource):
+    class Meta:
+        queryset = User.objects.all()
+        resource_name = 'user'
+        excludes = ['email', 'id', 'is_active', 'is_staff', 'is_superuser', 'password']
+
+
 class ProjectResource(AddUserFieldMixin, ModelResource):
     resource_name = 'project'
 
@@ -119,7 +126,7 @@ class TaskResource(AddUserFieldMixin, ModelResource):
         }
 
 
-class WorkSessionResource(ModelResource):
+class WorkSessionResource(AddUserFieldMixin, ModelResource):
     task = fields.ForeignKey(TaskResource, 'task')
 
     class Meta:
