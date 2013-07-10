@@ -153,3 +153,4 @@ class WorkSessionResource(AddUserFieldMixin, ModelResource):
     def dehydrate(self, bundle):
         bundle.data['task_id'] = bundle.obj.task.id
         bundle.data['project_id'] = bundle.obj.task.project.id
+        return bundle
