@@ -98,6 +98,8 @@ class UserResource(ModelResource):
     class Meta:
         queryset = User.objects.all()
         resource_name = 'user'
+        authentication = ApiTokenAuthentication()
+        authorization = DjangoAuthorization()
         excludes = ['email', 'id', 'is_active', 'is_staff', 'is_superuser', 'password']
 
 
@@ -130,6 +132,10 @@ class TaskResource(AddUserFieldMixin, ModelResource):
             'id': ALL
         }
 
+    def dehydrate(self, bundle):
+        bundle.data['project_id'] = bundle.obj.project.id
+        return bundle
+
 
 class WorkSessionResource(AddUserFieldMixin, ModelResource):
     task = fields.ForeignKey(TaskResource, 'task')
@@ -143,3 +149,7 @@ class WorkSessionResource(AddUserFieldMixin, ModelResource):
         filtering = {
             'task': ALL_WITH_RELATIONS
         }
+
+    def dehydrate(self, bundle):
+        bundle.data['task_id'] = bundle.obj.task.id
+        bundle.data['project_id'] = bundle.obj.task.project.id
