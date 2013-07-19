@@ -15,6 +15,8 @@ from tastypie.http import HttpUnauthorized
 from tastypie.resources import ModelResource
 from tastypie.throttle import CacheDBThrottle
 from tracker.models import Task, WorkSession, ApiToken, Project
+from tastypie.authorization import Authorization
+from tastypie.exceptions import Unauthorized
 
 
 class ApiTokenAuthentication(Authentication):
@@ -47,6 +49,43 @@ class ApiTokenAuthentication(Authentication):
 
         request.user = api_token.user
         return True
+
+
+class UserObjectsOnlyAuthorization(Authorization):
+    """
+    Allows users to only access objects they own. Shamelessly ripped off from
+    the Tastypie docs.
+
+    This only works correctly with ModelResource.
+    """
+
+    def read_list(self, object_list, bundle):
+        return object_list.filter(user=bundle.request.user)
+
+    def read_detail(self, object_list, bundle):
+        # Is the requested object owned by the user?
+        return bundle.obj.user == bundle.request.user
+
+    def update_list(self, object_list, bundle):
+        allowed = []
+
+        # Since they may not all be saved, iterate over them.
+        for obj in object_list:
+            if obj.user == bundle.request.user:
+                allowed.append(obj)
+
+        return allowed
+
+    def update_detail(self, object_list, bundle):
+        return bundle.obj.user == bundle.request.user
+
+    def delete_list(self, object_list, bundle):
+        # TODO: handle this.
+        raise Unauthorized('Cannot delete data.')
+
+    def delete_detail(self, object_list, bundle):
+        # TODO: handle this.
+        raise Unauthorized('Cannot delete data.')
 
 
 # TODO: all of these resources should add Access-Control-Allow-Methods to
@@ -111,7 +150,7 @@ class ProjectResource(AddUserFieldMixin, ModelResource):
         queryset = Project.objects.all()
         resource_name = 'project'
         authentication = ApiTokenAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = UserObjectsOnlyAuthorization()
         filtering = {
             'id': ALL
         }
@@ -126,7 +165,7 @@ class TaskResource(AddUserFieldMixin, ModelResource):
         queryset = Task.objects.all()
         resource_name = 'task'
         authentication = ApiTokenAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = UserObjectsOnlyAuthorization()
         filtering = {
             'project': ALL_WITH_RELATIONS,
             'id': ALL
@@ -145,7 +184,7 @@ class WorkSessionResource(AddUserFieldMixin, ModelResource):
         queryset = WorkSession.objects.all()
         resource_name = 'workSession'
         authentication = ApiTokenAuthentication()
-        authorization = DjangoAuthorization()
+        authorization = UserObjectsOnlyAuthorization()
         filtering = {
             'task': ALL_WITH_RELATIONS
         }
