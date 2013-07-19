@@ -4,6 +4,8 @@
 
 
 from django import http
+import time
+import random
 
 try:
     from django.conf import settings
@@ -42,4 +44,16 @@ class XsSharing(object):
         response['Access-Control-Allow-Headers'] = ",".join(XS_SHARING_ALLOWED_HEADERS)
         response['Access-Control-Allow-Methods'] = ",".join(XS_SHARING_ALLOWED_METHODS)
 
+        return response
+
+
+class SlowPony(object):
+    """
+    This middleware introduces a random network delay in every HTTP request.
+
+    Use this to simulate a slow internet connection.
+    """
+
+    def process_response(self, request, response):
+        time.sleep(random.randint(0, 4))
         return response
